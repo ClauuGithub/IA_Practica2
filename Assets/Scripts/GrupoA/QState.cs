@@ -29,6 +29,7 @@ public sealed class QState
     public int OtherX { get; }
     public int OtherY { get; }
 
+    // Esto es lo que mmodificamos para hacer la tabla
     public QState(CellInfo agent, CellInfo other)
     {
         AgentX = agent.x;
