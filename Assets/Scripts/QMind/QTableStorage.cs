@@ -1,0 +1,106 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using UnityEngine;
+
+namespace QMind
+{
+    public class QTableStorage
+    {
+        private readonly string _filePath;
+        private readonly string[] _actionNames;
+
+        public Dictionary<string, float[]> Data { get; } = new();
+
+        public QTableStorage(string fileName = "TablaQ.csv")
+        {
+            // Guardamos en la carpeta de datos persistentes de Unity
+            _filePath = Path.Combine(Application.persistentDataPath, fileName);
+            _actionNames = Enum.GetNames(typeof(QAction));
+            Load();
+        }
+
+        public void Save()
+        {
+            using var writer = new StreamWriter(_filePath, false, Encoding.UTF8);
+
+            // Cabecera
+            writer.Write("State");
+            foreach (var actionName in _actionNames)
+            {
+                writer.Write($";{actionName}");
+            }
+            writer.WriteLine();
+
+            // Filas
+            foreach (var kv in Data)
+            {
+                string stateKey = kv.Key;
+                float[] qValues = kv.Value;
+
+                writer.Write(stateKey);
+                for (int i = 0; i < _actionNames.Length; i++)
+                {
+                    writer.Write(";");
+                    writer.Write(qValues[i].ToString(CultureInfo.InvariantCulture));
+                }
+
+                writer.WriteLine();
+            }
+        }
+
+        private void Load()
+        {
+            if (!File.Exists(_filePath))
+            {
+                Debug.Log($"[QTableStorage] No Q-table file found at {_filePath}, starting empty.");
+                return;
+            }
+
+            using var reader = new StreamReader(_filePath, Encoding.UTF8);
+
+            // Leemos cabecera
+            var headerLine = reader.ReadLine();
+            if (string.IsNullOrWhiteSpace(headerLine))
+            {
+                Debug.LogWarning("[QTableStorage] Empty Q-table file, starting with no data.");
+                return;
+            }
+
+            // Leemos datos
+            while (!reader.EndOfStream)
+            {
+                var line = reader.ReadLine();
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                var parts = line.Split(';');
+                if (parts.Length < 2)
+                    continue;
+
+                string stateKey = parts[0];
+                var qValues = new float[_actionNames.Length];
+
+                for (int i = 0; i < _actionNames.Length; i++)
+                {
+                    int csvIndex = i + 1;
+                    if (csvIndex < parts.Length &&
+                        float.TryParse(parts[csvIndex], NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+                    {
+                        qValues[i] = value;
+                    }
+                    else
+                    {
+                        qValues[i] = 0f;
+                    }
+                }
+
+                Data[stateKey] = qValues;
+            }
+
+            Debug.Log($"[QTableStorage] Q-table loaded from {_filePath} with {Data.Count} states.");
+        }
+    }
+}
