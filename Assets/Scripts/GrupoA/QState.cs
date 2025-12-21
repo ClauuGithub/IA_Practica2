@@ -1,4 +1,6 @@
+using System.Text;
 using NavigationDJIA.World;
+using NavigationDJIA.Interfaces;
 
 /// <summary>
 /// TODO(alumno):
@@ -27,22 +29,41 @@ namespace GrupoA
 {
     public sealed class QState
     {
-        public int AgentX { get; }
-        public int AgentY { get; }
-        public int OtherX { get; }
-        public int OtherY { get; }
+        private readonly int dxZombie;
+        private readonly int dyZombie;
 
-        public QState(CellInfo agent, CellInfo other)
+        private readonly bool wallUp;
+        private readonly bool wallDown;
+        private readonly bool wallLeft;
+        private readonly bool wallRight;
+
+        public QState(CellInfo agent, CellInfo other, WorldInfo world)
         {
-            AgentX = agent.x;
-            AgentY = agent.y;
-            OtherX = other.x;
-            OtherY = other.y;
+            dxZombie = other.x - agent.x;
+            dyZombie = other.y - agent.y;
+
+            // Comprobar muros alrededor
+            wallUp = IsWall(agent.x, agent.y + 1, world);
+            wallDown = IsWall(agent.x, agent.y - 1, world);
+            wallLeft = IsWall(agent.x - 1, agent.y, world);
+            wallRight = IsWall(agent.x + 1, agent.y, world);
+        }
+
+        private bool IsWall(int x, int y, WorldInfo world)
+        {
+            // Fuera del grid = muro
+            if (x < 0 || y < 0 || x >= world.WorldSize.x || y >= world.WorldSize.y)
+                return true;
+
+            return world[x, y].Type == CellInfo.CellType.Wall;
         }
 
         public string ToKey()
         {
-            return $"{AgentX},{AgentY}|{OtherX},{OtherY}";
+            // Codificamos en un string simple: dx,dy + muros 1/0
+            return $"{dxZombie},{dyZombie}|{(wallUp ? 1 : 0)}{(wallDown ? 1 : 0)}{(wallLeft ? 1 : 0)}{(wallRight ? 1 : 0)}";
         }
     }
+
+
 }
