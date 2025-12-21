@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using System.Diagnostics;
 
 namespace QMind
 {
@@ -16,10 +17,41 @@ namespace QMind
 
         public QTableStorage(string fileName = "TablaQ.csv")
         {
-            // Guardamos en la carpeta de datos persistentes de Unity
-            _filePath = Path.Combine(Application.persistentDataPath, fileName);
             _actionNames = Enum.GetNames(typeof(QAction));
+            
+            string grupo = ResolveGrupoNameFromCallStack();
+            if (string.IsNullOrWhiteSpace(grupo))
+                throw new Exception("No se pudo detectar el Grupo desde el call stack. Asegúrate de que el código del alumno está en namespace GrupoA/GrupoB/etc.");
+
+            // Convención: carpeta = namespace
+            // Assets/Scripts/GrupoX/TablaQ.csv
+            string absoluteFolder = Path.Combine(Application.dataPath, "Scripts", grupo);
+
+            if (!Directory.Exists(absoluteFolder))
+                throw new DirectoryNotFoundException($"No existe la carpeta esperada: {absoluteFolder}");
+
+            _filePath = Path.Combine(absoluteFolder, fileName);
+            UnityEngine.Debug.Log($"[QTableStorage] Q-table path: {_filePath}");
+            Console.WriteLine($"[QTableStorage] Q-table path: {_filePath}");
+            
             Load();
+        }
+
+        private static string ResolveGrupoNameFromCallStack()
+        {
+            var st = new StackTrace(false);
+
+            for (int i = 0; i < st.FrameCount; i++)
+            {
+                var t = st.GetFrame(i)?.GetMethod()?.DeclaringType;
+                var ns = t?.Namespace;
+                if (string.IsNullOrWhiteSpace(ns)) continue;
+
+                if (ns.StartsWith("Grupo", StringComparison.Ordinal))
+                    return ns.Split('.')[0]; // "GrupoA"
+            }
+
+            return null;
         }
 
         public void Save()
@@ -55,7 +87,7 @@ namespace QMind
         {
             if (!File.Exists(_filePath))
             {
-                Debug.Log($"[QTableStorage] No Q-table file found at {_filePath}, starting empty.");
+                UnityEngine.Debug.Log($"[QTableStorage] No Q-table file found at {_filePath}, starting empty.");
                 return;
             }
 
@@ -65,7 +97,7 @@ namespace QMind
             var headerLine = reader.ReadLine();
             if (string.IsNullOrWhiteSpace(headerLine))
             {
-                Debug.LogWarning("[QTableStorage] Empty Q-table file, starting with no data.");
+                UnityEngine.Debug.LogWarning("[QTableStorage] Empty Q-table file, starting with no data.");
                 return;
             }
 
@@ -100,7 +132,7 @@ namespace QMind
                 Data[stateKey] = qValues;
             }
 
-            Debug.Log($"[QTableStorage] Q-table loaded from {_filePath} with {Data.Count} states.");
-        }
+            UnityEngine.Debug.Log($"[QTableStorage] Q-table loaded from {_filePath} with {Data.Count} states.");
+        }       
     }
 }

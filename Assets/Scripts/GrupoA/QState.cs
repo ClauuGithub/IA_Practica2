@@ -22,24 +22,27 @@ using NavigationDJIA.World;
 ///  El estado debe poder convertirse a una clave única (string) mediante ToKey(),
 ///  ya que esa clave se usará como índice en la TablaQ y en el archivo CSV.
 /// </summary>
-public sealed class QState
+
+namespace GrupoA
 {
-    public int AgentX { get; }
-    public int AgentY { get; }
-    public int OtherX { get; }
-    public int OtherY { get; }
-
-    // Esto es lo que mmodificamos para hacer la tabla
-    public QState(CellInfo agent, CellInfo other)
+    public sealed class QState
     {
-        AgentX = agent.x;
-        AgentY = agent.y;
-        OtherX = other.x;
-        OtherY = other.y;
-    }
+        public int AgentX { get; }
+        public int AgentY { get; }
+        public int OtherX { get; }
+        public int OtherY { get; }
 
-    public string ToKey()
-    {
-        return $"{AgentX},{AgentY}|{OtherX},{OtherY}";
+        public QState(CellInfo agent, CellInfo other)
+        {
+            AgentX = agent.x;
+            AgentY = agent.y;
+            OtherX = other.x;
+            OtherY = other.y;
+        }
+
+        public string ToKey()
+        {
+            return $"{AgentX},{AgentY}|{OtherX},{OtherY}";
+        }
     }
 }

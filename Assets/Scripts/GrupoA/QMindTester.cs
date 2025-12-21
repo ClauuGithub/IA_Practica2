@@ -2,56 +2,59 @@ using NavigationDJIA.World;
 using QMind;
 using QMind.Interfaces;
 
-public class QMindTester : IQMind
+namespace GrupoA
 {
-    private WorldInfo _worldInfo;
-    private QTableStorage _qStorage;
-    private QTable _qTable;
-
-    public void Initialize(WorldInfo worldInfo)
+    public class QMindTester : IQMind
     {
-        _worldInfo = worldInfo;
+        private WorldInfo _worldInfo;
+        private QTableStorage _qStorage;
+        private QTable _qTable;
 
-        _qStorage = new QTableStorage("TablaQ.csv");
-        _qTable = new QTable(_qStorage);
-    }
-
-    public CellInfo GetNextStep(CellInfo currentPosition, CellInfo otherPosition)
-    {
-        string stateKey = BuildStateKey(currentPosition, otherPosition);
-
-        QAction bestAction = _qTable.GetBestAction(stateKey);
-
-        CellInfo nextPosition = ApplyAction(currentPosition, bestAction);
-
-        return nextPosition;
-    }
-
-    private string BuildStateKey(CellInfo agent, CellInfo other)
-    {
-        var state = new QState(agent, other);
-        return state.ToKey();
-    }
-
-    private CellInfo ApplyAction(CellInfo agentCell, QAction action)
-    {
-        switch (action)
+        public void Initialize(WorldInfo worldInfo)
         {
-            case QAction.Up:
-                return new CellInfo(agentCell.x, agentCell.y + 1);
+            _worldInfo = worldInfo;
 
-            case QAction.Down:
-                return new CellInfo(agentCell.x, agentCell.y - 1);
+            _qStorage = new QTableStorage("TablaQ.csv");
+            _qTable = new QTable(_qStorage);
+        }
 
-            case QAction.Right:
-                return new CellInfo(agentCell.x + 1, agentCell.y);
+        public CellInfo GetNextStep(CellInfo currentPosition, CellInfo otherPosition)
+        {
+            string stateKey = BuildStateKey(currentPosition, otherPosition);
 
-            case QAction.Left:
-                return new CellInfo(agentCell.x - 1, agentCell.y);
+            QAction bestAction = _qTable.GetBestAction(stateKey);
 
-            case QAction.Stay:
-            default:
-                return new CellInfo(agentCell.x, agentCell.y);
+            CellInfo nextPosition = ApplyAction(currentPosition, bestAction);
+
+            return nextPosition;
+        }
+
+        private string BuildStateKey(CellInfo agent, CellInfo other)
+        {
+            var state = new QState(agent, other);
+            return state.ToKey();
+        }
+
+        private CellInfo ApplyAction(CellInfo agentCell, QAction action)
+        {
+            switch (action)
+            {
+                case QAction.Up:
+                    return new CellInfo(agentCell.x, agentCell.y + 1);
+
+                case QAction.Down:
+                    return new CellInfo(agentCell.x, agentCell.y - 1);
+
+                case QAction.Right:
+                    return new CellInfo(agentCell.x + 1, agentCell.y);
+
+                case QAction.Left:
+                    return new CellInfo(agentCell.x - 1, agentCell.y);
+
+                case QAction.Stay:
+                default:
+                    return new CellInfo(agentCell.x, agentCell.y);
+            }
         }
     }
 }
