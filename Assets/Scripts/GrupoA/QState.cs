@@ -1,4 +1,6 @@
+using System.Text;
 using NavigationDJIA.World;
+using NavigationDJIA.Interfaces;
 
 /// <summary>
 /// TODO(alumno):
@@ -25,24 +27,97 @@ using NavigationDJIA.World;
 
 namespace GrupoA
 {
-    public sealed class QState
+    public sealed class QState 
     {
-        public int AgentX { get; }
-        public int AgentY { get; }
-        public int OtherX { get; }
-        public int OtherY { get; }
+        private WorldInfo _world;
 
-        public QState(CellInfo agent, CellInfo other)
+        // Ventana 5x5 = 25 celdas
+        // 0 = libre, 1 = muro, 2 = zombie
+        private readonly int[] localGrid;
+
+        // Dirección relativa del zombie
+        private readonly int zombieDx; // -1, 0, 1
+        private readonly int zombieDy; // -1, 0, 1
+
+        public QState(CellInfo agent, CellInfo other, WorldInfo world)
         {
-            AgentX = agent.x;
-            AgentY = agent.y;
-            OtherX = other.x;
-            OtherY = other.y;
+            _world = world;
+
+            localGrid = new int[25];
+
+            int index = 0;
+
+            bool IsInside(int x, int y)
+            {
+                return x >= 0 && y >= 0 &&
+                       x < _world.WorldSize.x &&
+                       y < _world.WorldSize.y;
+            }
+
+            bool IsWall(int x, int y)
+            {
+                /*if (!IsInside(x, y))
+                    return true;*/
+
+                return _world[x, y].Type == CellInfo.CellType.Wall;
+            }
+
+            for (int dy = 2; dy >= -2; dy--)
+            {
+                for (int dx = -2; dx <= 2; dx++)
+                {
+                    int x = agent.x + dx;
+                    int y = agent.y + dy;
+
+                    if (!IsInside(x, y))
+                    {
+                        localGrid[index++] = 1; // fuera = muro
+                    }
+                    else if (IsWall(x, y))
+                    {
+                        localGrid[index++] = 1;
+                    }
+                    else if (x == other.x && y == other.y)
+                    {
+                        localGrid[index++] = 2;
+                    }
+                    else
+                    {
+                        localGrid[index++] = 0;
+                    }
+                }
+            }
+
+            zombieDx = Sign(other.x - agent.x);
+            zombieDy = Sign(other.y - agent.y);
+        }
+
+        private int Sign(int value)
+        {
+            if (value > 0) return 1;
+            if (value < 0) return -1;
+            return 0;
         }
 
         public string ToKey()
         {
-            return $"{AgentX},{AgentY}|{OtherX},{OtherY}";
+            StringBuilder sb = new StringBuilder(64);
+
+            for (int i = 0; i < localGrid.Length; i++)
+            {
+                sb.Append(localGrid[i]);
+            }
+
+            sb.Append('|');
+            sb.Append(zombieDx);
+            sb.Append(',');
+            sb.Append(zombieDy);
+
+            return sb.ToString();
         }
+
+        
+
+
     }
 }
