@@ -579,7 +579,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agent: {fileID: 1824630789}
   other: {fileID: 1518200256}
-  qLearningTrainerClass: GrupoA.QMindTrainer, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  qLearningTrainerClass: GrupoL.QMindTrainer, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   showSimulation: 1
   agentSpeed: 3
