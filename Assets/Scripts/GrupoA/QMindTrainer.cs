@@ -137,10 +137,32 @@ namespace GrupoA
         {
             // TODO (alumno):
             // 1. Si !train -> return _qTable.GetBestAction(stateKey);
+
+            if (!train)
+            {
+                // Explotar: elegir la mejor acción conocida
+                return _qTable.GetBestAction(stateKey);
+            }
+
             // 2. Si train:
             //    - double r = _random.NextDouble();
             //    - si r < _params.epsilon -> acción aleatoria
             //    - si no -> _qTable.GetBestAction(stateKey)
+
+            // Entrenamiento: ε-greedy
+            double r = _random.NextDouble();
+            if (r < _params.epsilon)
+            {
+                // Acción aleatoria
+                Array actions = Enum.GetValues(typeof(QAction));
+                return (QAction)actions.GetValue(_random.Next(actions.Length));
+            }
+            else
+            {
+                // Mejor acción según QTable
+                return _qTable.GetBestAction(stateKey);
+            }
+
             throw new NotImplementedException();
         }
 
@@ -157,6 +179,16 @@ namespace GrupoA
             // float target = reward + _params.gamma * maxQNext;
             // float newQ = (1 - _params.alpha) * oldQ + _params.alpha * target;
             // _qTable.SetQ(stateKey, action, newQ);
+
+            // ME LO HA DADO COPIADO TAL CUAL LOL NO SÉ SI HABRÁ QUE CAMBIARLO UN POCO
+            float oldQ = _qTable.GetQ(stateKey, action);
+            float maxQNext = _qTable.GetMaxQ(nextStateKey);
+
+            float target = reward + _params.gamma * maxQNext;
+            float newQ = (1 - _params.alpha) * oldQ + _params.alpha * target;
+
+            _qTable.SetQ(stateKey, action, newQ);
+
             throw new NotImplementedException();
         }
 
@@ -172,6 +204,14 @@ namespace GrupoA
             // Ejemplo orientativo:
             // if (agent == other) return 10f;
             // else return -0.01f;
+
+            // Si el zombie alcanza al agente -> recompensa negativa grande
+            if (agent.x == other.x && agent.y == other.y)
+                return -10f;
+
+            // Paso normal -> pequeña penalización para motivar escapar
+            return -0.1f;
+
             throw new NotImplementedException();
         }
 
@@ -184,6 +224,10 @@ namespace GrupoA
         {
             // TODO (alumno):
             // return agent == other;
+
+            // Termina episodio si zombie alcanza al agente
+            return agent.x == other.x && agent.y == other.y;
+
             throw new NotImplementedException();
         }
 
