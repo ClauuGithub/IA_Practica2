@@ -2,7 +2,7 @@ using NavigationDJIA.World;
 using QMind;
 using QMind.Interfaces;
 
-namespace GrupoA
+namespace GrupoL
 {
     public class QMindTester : IQMind
     {
