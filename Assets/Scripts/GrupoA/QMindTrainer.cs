@@ -163,7 +163,6 @@ namespace GrupoA
                 return _qTable.GetBestAction(stateKey);
             }
 
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -189,7 +188,6 @@ namespace GrupoA
 
             _qTable.SetQ(stateKey, action, newQ);
 
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -212,7 +210,6 @@ namespace GrupoA
             // Paso normal -> pequeña penalización para motivar escapar
             return -0.1f;
 
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -228,7 +225,6 @@ namespace GrupoA
             // Termina episodio si zombie alcanza al agente
             return agent.x == other.x && agent.y == other.y;
 
-            throw new NotImplementedException();
         }
 
 
