@@ -25,7 +25,7 @@ using NavigationDJIA.Interfaces;
 ///  ya que esa clave se usará como índice en la TablaQ y en el archivo CSV.
 /// </summary>
 
-namespace GrupoA
+namespace GrupoL
 {
     public sealed class QState
     {
