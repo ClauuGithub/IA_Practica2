@@ -205,10 +205,32 @@ namespace GrupoL
 
             // Si el player alcanza al agente -> recompensa negativa grande
             if (agent.x == other.x && agent.y == other.y)
-                return -10f;
+                return -100f;
+
+            float reward = 1f; //sobrevivir un paso
+            
+            // Distancia REAL después del movimiento
+            int newDist = Math.Abs(agent.x - other.x)+ Math.Abs(agent.y - other.y);
+
+            // Distancia ANTERIOR (guardada antes del step)
+            int oldDist = Math.Abs(_agentPosition.x - _otherPosition.x) + Math.Abs(_agentPosition.y - _otherPosition.y);
+
+            // Cambio de distancia
+            int delta = newDist - oldDist;
+
+            if (delta > 0)
+                reward += 5f;      // se aleja
+            else if (delta < 0)
+                reward -= 5f;      // se acerca
+
+            //Penalización si esta quieto
+            if (agent.x == _agentPosition.x && agent.y == _agentPosition.y)
+               reward -= 3.0f;
+            
+            return reward;
 
             // Paso normal -> pequeña penalización para motivar escapar
-            return -0.1f;
+            //return -0.1f;
 
         }
 

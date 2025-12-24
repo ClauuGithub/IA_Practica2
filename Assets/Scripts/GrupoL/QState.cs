@@ -1,6 +1,8 @@
+using System;
 using System.Text;
 using NavigationDJIA.World;
 using NavigationDJIA.Interfaces;
+
 
 /// <summary>
 /// TODO(alumno):
@@ -31,6 +33,7 @@ namespace GrupoL
     {
         private readonly int dxPlayer;
         private readonly int dyPlayer;
+        private readonly int dangerLevel;
 
         private readonly bool wallUp;
         private readonly bool wallDown;
@@ -39,8 +42,13 @@ namespace GrupoL
 
         public QState(CellInfo agent, CellInfo other, WorldInfo world)
         {
-            dxPlayer = other.x - agent.x;
-            dyPlayer = other.y - agent.y;
+            dxPlayer = Math.Sign (other.x - agent.x);
+            dyPlayer = Math.Sign(other.y - agent.y);
+
+            int manhattan=Math.Abs(other.x - agent.x)+ Math.Abs(other.y - agent.y);
+            if (manhattan <= 1) dangerLevel = 0; //0= muy cerca
+            else if (manhattan <= 3) dangerLevel = 1;// 1=cerca
+            else dangerLevel = 2;// 2=lejos
 
             // Comprobar muros alrededor
             wallUp = IsWall(agent.x, agent.y + 1, world);
@@ -61,7 +69,7 @@ namespace GrupoL
         public string ToKey()
         {
             // Codificamos en un string simple: dx,dy + muros 1/0
-            return $"{dxPlayer},{dyPlayer}|{(wallUp ? 1 : 0)}{(wallDown ? 1 : 0)}{(wallLeft ? 1 : 0)}{(wallRight ? 1 : 0)}";
+            return $"{dxPlayer},{dyPlayer}|{dangerLevel}|{(wallUp ? 1 : 0)}{(wallDown ? 1 : 0)}{(wallLeft ? 1 : 0)}{(wallRight ? 1 : 0)}";
         }
     }
 
