@@ -230,20 +230,33 @@ namespace GrupoL
 
         private CellInfo ApplyAction(CellInfo agentCell, QAction action)
         {
-            int nx = agentCell.x;;
+            int nx = agentCell.x;
             int ny = agentCell.y;
 
             switch (action)
             {
-                case QAction.Up:    ny += 1; break;
-                case QAction.Down:  ny -= 1; break;
+                case QAction.Up: ny += 1; break;
+                case QAction.Down: ny -= 1; break;
                 case QAction.Right: nx += 1; break;
-                case QAction.Left:  nx -= 1; break;
-                case QAction.Stay:  return agentCell;
+                case QAction.Left: nx -= 1; break;
+                case QAction.Stay: return agentCell;
             }
 
-            return _worldInfo[nx, ny];
+            //Detectar fuera del mundo
+            if (nx < 0 || ny < 0 ||
+                nx >= _worldInfo.WorldSize.x ||
+                ny >= _worldInfo.WorldSize.y)
+                return agentCell;
+
+            var nextCell = _worldInfo[nx, ny];
+
+            //Detectar muros
+            if (!nextCell.Walkable)
+                return agentCell;
+
+            return nextCell;
         }
+
 
 
         private CellInfo MoveOpponent(CellInfo opponent, CellInfo target)
