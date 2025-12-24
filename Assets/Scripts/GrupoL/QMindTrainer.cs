@@ -203,7 +203,7 @@ namespace GrupoL
             // if (agent == other) return 10f;
             // else return -0.01f;
 
-            // Si el zombie alcanza al agente -> recompensa negativa grande
+            // Si el player alcanza al agente -> recompensa negativa grande
             if (agent.x == other.x && agent.y == other.y)
                 return -10f;
 
@@ -222,7 +222,7 @@ namespace GrupoL
             // TODO (alumno):
             // return agent == other;
 
-            // Termina episodio si zombie alcanza al agente
+            // Termina episodio si player alcanza al agente
             return agent.x == other.x && agent.y == other.y;
 
         }

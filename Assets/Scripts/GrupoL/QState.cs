@@ -29,8 +29,8 @@ namespace GrupoL
 {
     public sealed class QState
     {
-        private readonly int dxZombie;
-        private readonly int dyZombie;
+        private readonly int dxPlayer;
+        private readonly int dyPlayer;
 
         private readonly bool wallUp;
         private readonly bool wallDown;
@@ -39,8 +39,8 @@ namespace GrupoL
 
         public QState(CellInfo agent, CellInfo other, WorldInfo world)
         {
-            dxZombie = other.x - agent.x;
-            dyZombie = other.y - agent.y;
+            dxPlayer = other.x - agent.x;
+            dyPlayer = other.y - agent.y;
 
             // Comprobar muros alrededor
             wallUp = IsWall(agent.x, agent.y + 1, world);
@@ -61,7 +61,7 @@ namespace GrupoL
         public string ToKey()
         {
             // Codificamos en un string simple: dx,dy + muros 1/0
-            return $"{dxZombie},{dyZombie}|{(wallUp ? 1 : 0)}{(wallDown ? 1 : 0)}{(wallLeft ? 1 : 0)}{(wallRight ? 1 : 0)}";
+            return $"{dxPlayer},{dyPlayer}|{(wallUp ? 1 : 0)}{(wallDown ? 1 : 0)}{(wallLeft ? 1 : 0)}{(wallRight ? 1 : 0)}";
         }
     }
 
