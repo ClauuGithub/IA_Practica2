@@ -585,8 +585,8 @@ MonoBehaviour:
   agentSpeed: 3
   train: 1
   algorithmParams:
-    alpha: 0.2
-    epsilon: 0.85
+    alpha: 0.1
+    epsilon: 0.2
     gamma: 0.9
     episodes: 1000
     maxSteps: -1
