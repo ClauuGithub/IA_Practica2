@@ -225,7 +225,7 @@ namespace GrupoL
 
             //Penalización si esta quieto
             if (agent.x == _agentPosition.x && agent.y == _agentPosition.y)
-               reward -= 3.0f;
+               reward -= 5.0f;
             
             return reward;
 
