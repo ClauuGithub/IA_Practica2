@@ -3,6 +3,7 @@ using NavigationDJIA.Interfaces;
 using NavigationDJIA.World;
 using QMind;
 using QMind.Interfaces;
+using System.Collections.Generic;
 
 namespace GrupoL
 {
@@ -21,6 +22,7 @@ namespace GrupoL
         private float _return;
         private float _returnAveraged;
         private System.Random _random = new System.Random();
+
 
         #region IQMindTrainer implementation
 
@@ -203,6 +205,7 @@ namespace GrupoL
             // if (agent == other) return 10f;
             // else return -0.01f;
 
+
             // Si el player alcanza al agente -> recompensa negativa grande
             if (agent.x == other.x && agent.y == other.y)
                 return -100f;
@@ -226,7 +229,17 @@ namespace GrupoL
             //Penalización si esta quieto
             if (agent.x == _agentPosition.x && agent.y == _agentPosition.y)
                reward -= 5.0f;
-            
+
+            //Incentivos a explorar
+            HashSet<(int, int)> visitedPositions = new HashSet<(int, int)>();
+            var pos = (agent.x, agent.y);
+            if (!visitedPositions.Contains(pos))
+            {
+                reward += 2f;  // incentiva explorar
+                visitedPositions.Add(pos);
+            }
+
+
             return reward;
 
             // Paso normal -> pequeña penalización para motivar escapar
