@@ -23,6 +23,9 @@ namespace GrupoL
         private float _returnAveraged;
         private System.Random _random = new System.Random();
 
+        private HashSet<(int, int)> visitedPositions;
+
+        private int _dangerStuckCounter = 0;
 
         #region IQMindTrainer implementation
 
@@ -56,6 +59,7 @@ namespace GrupoL
 
         private void StartNewEpisode()
         {
+            _dangerStuckCounter = 0;
             CurrentEpisode++;
             CurrentStep = 0;
             _return = 0f;
@@ -63,6 +67,8 @@ namespace GrupoL
 
             _agentPosition = _worldInfo.RandomCell();
             _otherPosition = _worldInfo.RandomCell();
+
+            visitedPositions = new HashSet<(int, int)>();
 
             OnEpisodeStarted?.Invoke(this, EventArgs.Empty);
         }
@@ -92,10 +98,19 @@ namespace GrupoL
             // Nuevos estados del agente y del oponente
             CellInfo newAgentPos = ApplyAction(_agentPosition, action);
             CellInfo newOtherPos = MoveOpponent(_otherPosition, newAgentPos.Walkable ? newAgentPos : _agentPosition);
-            
+
             // Nuevo estado del agente
             string nextStateKey = BuildStateKey(newAgentPos, newOtherPos);
-            
+
+            int oldDist = Math.Abs(_agentPosition.x - _otherPosition.x) +
+              Math.Abs(_agentPosition.y - _otherPosition.y);
+
+            if (oldDist <= 1)
+                _dangerStuckCounter++;
+            else
+                _dangerStuckCounter = 0;
+
+
             // Calcula la recompensa
             float reward = ComputeReward(newAgentPos, newOtherPos);
 
@@ -211,9 +226,9 @@ namespace GrupoL
                 return -100f;
 
             float reward = 1f; //sobrevivir un paso
-            
+
             // Distancia REAL después del movimiento
-            int newDist = Math.Abs(agent.x - other.x)+ Math.Abs(agent.y - other.y);
+            int newDist = Math.Abs(agent.x - other.x) + Math.Abs(agent.y - other.y);
 
             // Distancia ANTERIOR (guardada antes del step)
             int oldDist = Math.Abs(_agentPosition.x - _otherPosition.x) + Math.Abs(_agentPosition.y - _otherPosition.y);
@@ -228,15 +243,27 @@ namespace GrupoL
 
             //Penalización si esta quieto
             if (agent.x == _agentPosition.x && agent.y == _agentPosition.y)
-               reward -= 5.0f;
+                reward -= 5.0f;
 
-            //Incentivos a explorar
-            HashSet<(int, int)> visitedPositions = new HashSet<(int, int)>();
-            var pos = (agent.x, agent.y);
+            // Evitar bucles
+            if (_dangerStuckCounter >= 3 && newDist >= 2)
+            {
+                reward += 20f; // recompensa grande por romper el bucle
+            }
+
+            return reward;
+
+        //Incentivos a explorar
+        //HashSet<(int, int)> visitedPositions = new HashSet<(int, int)>();
+        var pos = (agent.x, agent.y);
             if (!visitedPositions.Contains(pos))
             {
-                reward += 2f;  // incentiva explorar
+                reward += 2f;      // recompensa por explorar
                 visitedPositions.Add(pos);
+            }
+            else
+            {
+                reward -= 0.5f;    // castigo suave por repetir
             }
 
 
