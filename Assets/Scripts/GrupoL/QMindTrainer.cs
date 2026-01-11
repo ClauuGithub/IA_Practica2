@@ -3,6 +3,7 @@ using NavigationDJIA.Interfaces;
 using NavigationDJIA.World;
 using QMind;
 using QMind.Interfaces;
+using System.Collections.Generic;
 
 namespace GrupoL
 {
@@ -21,6 +22,7 @@ namespace GrupoL
         private float _return;
         private float _returnAveraged;
         private System.Random _random = new System.Random();
+
 
         #region IQMindTrainer implementation
 
@@ -203,12 +205,45 @@ namespace GrupoL
             // if (agent == other) return 10f;
             // else return -0.01f;
 
-            // Si el zombie alcanza al agente -> recompensa negativa grande
+
+            // Si el player alcanza al agente -> recompensa negativa grande
             if (agent.x == other.x && agent.y == other.y)
-                return -10f;
+                return -100f;
+
+            float reward = 1f; //sobrevivir un paso
+            
+            // Distancia REAL después del movimiento
+            int newDist = Math.Abs(agent.x - other.x)+ Math.Abs(agent.y - other.y);
+
+            // Distancia ANTERIOR (guardada antes del step)
+            int oldDist = Math.Abs(_agentPosition.x - _otherPosition.x) + Math.Abs(_agentPosition.y - _otherPosition.y);
+
+            // Cambio de distancia
+            int delta = newDist - oldDist;
+
+            if (delta > 0)
+                reward += 5f;      // se aleja
+            else if (delta < 0)
+                reward -= 5f;      // se acerca
+
+            //Penalización si esta quieto
+            if (agent.x == _agentPosition.x && agent.y == _agentPosition.y)
+               reward -= 5.0f;
+
+            //Incentivos a explorar
+            HashSet<(int, int)> visitedPositions = new HashSet<(int, int)>();
+            var pos = (agent.x, agent.y);
+            if (!visitedPositions.Contains(pos))
+            {
+                reward += 2f;  // incentiva explorar
+                visitedPositions.Add(pos);
+            }
+
+
+            return reward;
 
             // Paso normal -> pequeña penalización para motivar escapar
-            return -0.1f;
+            //return -0.1f;
 
         }
 
@@ -222,7 +257,7 @@ namespace GrupoL
             // TODO (alumno):
             // return agent == other;
 
-            // Termina episodio si zombie alcanza al agente
+            // Termina episodio si player alcanza al agente
             return agent.x == other.x && agent.y == other.y;
 
         }
