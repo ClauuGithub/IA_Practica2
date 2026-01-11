@@ -225,7 +225,7 @@ namespace GrupoL
             if (agent.x == other.x && agent.y == other.y)
                 return -100f;
 
-            float reward = 1f; //sobrevivir un paso
+            float reward = -0.1f; //sobrevivir un paso
 
             // Distancia REAL después del movimiento
             int newDist = Math.Abs(agent.x - other.x) + Math.Abs(agent.y - other.y);
@@ -251,19 +251,17 @@ namespace GrupoL
                 reward += 20f; // recompensa grande por romper el bucle
             }
 
-            return reward;
-
         //Incentivos a explorar
         //HashSet<(int, int)> visitedPositions = new HashSet<(int, int)>();
         var pos = (agent.x, agent.y);
             if (!visitedPositions.Contains(pos))
             {
-                reward += 2f;      // recompensa por explorar
+                reward += 5f;      // recompensa por explorar
                 visitedPositions.Add(pos);
             }
             else
             {
-                reward -= 0.5f;    // castigo suave por repetir
+                reward -= 2f;    // castigo suave por repetir
             }
 
 
