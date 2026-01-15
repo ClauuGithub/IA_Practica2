@@ -1,14 +1,7 @@
 using System;
-
 using System.Text;
-
 using NavigationDJIA.World;
-
 using NavigationDJIA.Interfaces;
-
-
-
-
 
 /// <summary> 
 /// TODO(alumno):
@@ -32,77 +25,46 @@ using NavigationDJIA.Interfaces;
 /// </summary> 
 
 
-
 namespace GrupoL
 {
 
     public sealed class QState
     {
-
         private readonly int dxPlayer;
-
         private readonly int dyPlayer;
-
         private readonly int dangerLevel;
 
-
-
         private readonly bool wallUp;
-
         private readonly bool wallDown;
-
         private readonly bool wallLeft;
-
         private readonly bool wallRight;
 
-
-
         private readonly int freeNeighbors;
-
-
 
         public QState(CellInfo agent, CellInfo other, WorldInfo world)
         {
 
             dxPlayer = Math.Sign(other.x - agent.x);
-
             dyPlayer = Math.Sign(other.y - agent.y);
 
-
-
             int manhattan = Math.Abs(other.x - agent.x) + Math.Abs(other.y - agent.y);
-
             if (manhattan <= 1) dangerLevel = 0; //0= muy cerca 
-
             else if (manhattan <= 3) dangerLevel = 1;// 1=cerca 
-
             else dangerLevel = 2;// 2=lejos 
 
 
-
             // Comprobar muros alrededor 
-
             wallUp = IsWall(agent.x, agent.y + 1, world);
-
             wallDown = IsWall(agent.x, agent.y - 1, world);
-
             wallLeft = IsWall(agent.x - 1, agent.y, world);
-
             wallRight = IsWall(agent.x + 1, agent.y, world);
 
-
-
+            //Comprobar número de celdas libres
             freeNeighbors = 0;
-
             if (!wallUp) freeNeighbors++;
-
             if (!wallDown) freeNeighbors++;
-
             if (!wallLeft) freeNeighbors++;
-
             if (!wallRight) freeNeighbors++;
-
-
 
         }
 
@@ -112,12 +74,8 @@ namespace GrupoL
         {
 
             // Fuera del grid = muro 
-
             if (x < 0 || y < 0 || x >= world.WorldSize.x || y >= world.WorldSize.y)
-
                 return true;
-
-
 
             return world[x, y].Type == CellInfo.CellType.Wall;
 
@@ -127,9 +85,7 @@ namespace GrupoL
 
         public string ToKey()
         {
-
-            // Codificamos en un string simple: dx,dy + muros 1/0 
-
+            // Codificamos en el string: dx,dy + nivel de peligro + vecinos libres + muros 1/0 
             return $"{dxPlayer},{dyPlayer}|{dangerLevel}|{freeNeighbors}|{(wallUp ? 1 : 0)}{(wallDown ? 1 : 0)}{(wallLeft ? 1 : 0)}{(wallRight ? 1 : 0)}";
 
         }

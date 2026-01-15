@@ -40,7 +40,8 @@ namespace GrupoL
         public float Return => _return;
         public float ReturnAveraged => _returnAveraged;
 
-        private Dictionary<(int, int), int> visitCount;//
+        //Variables
+        private Dictionary<(int, int), int> visitCount;
         private int explorationCenterX;
         private int explorationCenterY;
         public event EventHandler OnEpisodeStarted;
@@ -65,7 +66,7 @@ namespace GrupoL
 
         private void StartNewEpisode()
         {
-            visitCount = new Dictionary<(int, int), int>();//
+            visitCount = new Dictionary<(int, int), int>();
 
             _dangerStuckCounter = 0;
             CurrentEpisode++;
@@ -78,7 +79,7 @@ namespace GrupoL
 
             visitedPositions = new HashSet<(int, int)>();
 
-            explorationCenterX = _agentPosition.x;//
+            explorationCenterX = _agentPosition.x;
             explorationCenterY = _agentPosition.y;
 
 
@@ -92,7 +93,8 @@ namespace GrupoL
 
             OnEpisodeFinished?.Invoke(this, EventArgs.Empty);
 
-            _params.epsilon = Math.Max(0.05f, _params.epsilon * 0.995f);//
+            // Epsilon baja progresivamente hasta 0.05 mientras se entrena
+            _params.epsilon = Math.Max(0.05f, _params.epsilon * 0.995f);
 
             if (_params.episodes > 0 && CurrentEpisode >= _params.episodes)
             {
@@ -134,7 +136,7 @@ namespace GrupoL
                 UpdateQ(stateKey, action, reward, nextStateKey);
             }
 
-            // actualiza las posiciones
+            // Actualiza las posiciones
             _agentPosition = newAgentPos;
             _otherPosition = newOtherPos;
 
@@ -211,7 +213,6 @@ namespace GrupoL
             // float newQ = (1 - _params.alpha) * oldQ + _params.alpha * target;
             // _qTable.SetQ(stateKey, action, newQ);
 
-            // ME LO HA DADO COPIADO TAL CUAL LOL NO SÉ SI HABRÁ QUE CAMBIARLO UN POCO
             float oldQ = _qTable.GetQ(stateKey, action);
             float maxQNext = _qTable.GetMaxQ(nextStateKey);
 
@@ -240,12 +241,12 @@ namespace GrupoL
             if (agent.x == other.x && agent.y == other.y)
                 return -100f;
 
-            float reward = -0.1f; //sobrevivir un paso
+            float reward = -0.1f; //Sobrevivir un paso
 
-            // Distancia REAL después del movimiento
+            // Distancia real después del movimiento
             int newDist = Math.Abs(agent.x - other.x) + Math.Abs(agent.y - other.y);
 
-            // Distancia ANTERIOR (guardada antes del step)
+            // Distancia anterior (guardada antes del step)
             int oldDist = Math.Abs(_agentPosition.x - _otherPosition.x) + Math.Abs(_agentPosition.y - _otherPosition.y);
 
             // Cambio de distancia
@@ -260,44 +261,38 @@ namespace GrupoL
             if (agent.x == _agentPosition.x && agent.y == _agentPosition.y)
                 reward -= 5.0f;
 
-            // Evitar bucles
+            // Evitar bucles 2x2 y favorecer exploración
             if (_dangerStuckCounter >= 3 && newDist >= 2)
             {
                 reward += 20f; // recompensa grande por romper el bucle
             }
 
-            //Incentivos a explorar
-            ////HashSet<(int, int)> visitedPositions = new HashSet<(int, int)>();
-            //var pos = (agent.x, agent.y);
-            //    if (!visitedPositions.Contains(pos))
-            //    {
-            //        reward += 5f;      // recompensa por explorar
-            //        visitedPositions.Add(pos);
-            //    }
-            //    else
-            //    {
-            //        reward -= 2f;    // castigo suave por repetir
-            //    }
-
-            int distFromCenter = Math.Abs(agent.x - explorationCenterX) + Math.Abs(agent.y - explorationCenterY);//
-
-
-            var pos = (agent.x, agent.y); //
+            //Distancia Manhattan al punto inicial del episodio
+            int distFromCenter = Math.Abs(agent.x - explorationCenterX) + Math.Abs(agent.y - explorationCenterY);
+            
+            var pos = (agent.x, agent.y);//Posición actual del agente
 
             if (!visitCount.ContainsKey(pos))
+            { 
+                //Contador de visitas a la celda
                 visitCount[pos] = 0;
+            }
+                visitCount[pos]++; 
 
-            visitCount[pos]++;
-
+            //Castigo incremental por repetición de celda
             reward -= visitCount[pos] * 1.5f;
-
-            int visitedNeighbors = 0;//
-
+            
+            //Contador de vecinos alrededor de la celda actual
+            int visitedNeighbors = 0;
+            //Cuantas de las casillas adyacentes han sido previamente exploradas
+            // Si hay muchos vecinos visitados = zona explorada
+            // Si hay pocos = posibilidad de exploración
             if (visitCount.ContainsKey((agent.x + 1, agent.y))) visitedNeighbors++;
             if (visitCount.ContainsKey((agent.x - 1, agent.y))) visitedNeighbors++;
             if (visitCount.ContainsKey((agent.x, agent.y + 1))) visitedNeighbors++;
             if (visitCount.ContainsKey((agent.x, agent.y - 1))) visitedNeighbors++;
 
+            //Castigo proporcional al número de vecinos ya visitados
             reward -= visitedNeighbors * 2f;
 
             // Incentivo exploración global
