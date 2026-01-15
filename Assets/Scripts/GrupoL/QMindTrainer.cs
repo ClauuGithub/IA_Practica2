@@ -26,6 +26,8 @@ namespace GrupoL
         private HashSet<(int, int)> visitedPositions;
 
         private int _dangerStuckCounter = 0;
+        private Queue<string> recentStates;
+        private const int RecentMemory = 8;
 
         #region IQMindTrainer implementation
 
@@ -38,8 +40,12 @@ namespace GrupoL
         public float Return => _return;
         public float ReturnAveraged => _returnAveraged;
 
+        private Dictionary<(int, int), int> visitCount;//
+        private int explorationCenterX;
+        private int explorationCenterY;
         public event EventHandler OnEpisodeStarted;
         public event EventHandler OnEpisodeFinished;
+
 
         #endregion
 
@@ -59,6 +65,8 @@ namespace GrupoL
 
         private void StartNewEpisode()
         {
+            visitCount = new Dictionary<(int, int), int>();//
+
             _dangerStuckCounter = 0;
             CurrentEpisode++;
             CurrentStep = 0;
@@ -70,7 +78,12 @@ namespace GrupoL
 
             visitedPositions = new HashSet<(int, int)>();
 
+            explorationCenterX = _agentPosition.x;//
+            explorationCenterY = _agentPosition.y;
+
+
             OnEpisodeStarted?.Invoke(this, EventArgs.Empty);
+
         }
 
         private void EndEpisode()
@@ -78,6 +91,8 @@ namespace GrupoL
             _qTable.SaveToCsv();
 
             OnEpisodeFinished?.Invoke(this, EventArgs.Empty);
+
+            _params.epsilon = Math.Max(0.05f, _params.epsilon * 0.995f);//
 
             if (_params.episodes > 0 && CurrentEpisode >= _params.episodes)
             {
@@ -251,18 +266,42 @@ namespace GrupoL
                 reward += 20f; // recompensa grande por romper el bucle
             }
 
-        //Incentivos a explorar
-        //HashSet<(int, int)> visitedPositions = new HashSet<(int, int)>();
-        var pos = (agent.x, agent.y);
-            if (!visitedPositions.Contains(pos))
-            {
-                reward += 5f;      // recompensa por explorar
-                visitedPositions.Add(pos);
-            }
-            else
-            {
-                reward -= 2f;    // castigo suave por repetir
-            }
+            //Incentivos a explorar
+            ////HashSet<(int, int)> visitedPositions = new HashSet<(int, int)>();
+            //var pos = (agent.x, agent.y);
+            //    if (!visitedPositions.Contains(pos))
+            //    {
+            //        reward += 5f;      // recompensa por explorar
+            //        visitedPositions.Add(pos);
+            //    }
+            //    else
+            //    {
+            //        reward -= 2f;    // castigo suave por repetir
+            //    }
+
+            int distFromCenter = Math.Abs(agent.x - explorationCenterX) + Math.Abs(agent.y - explorationCenterY);//
+
+
+            var pos = (agent.x, agent.y); //
+
+            if (!visitCount.ContainsKey(pos))
+                visitCount[pos] = 0;
+
+            visitCount[pos]++;
+
+            reward -= visitCount[pos] * 1.5f;
+
+            int visitedNeighbors = 0;//
+
+            if (visitCount.ContainsKey((agent.x + 1, agent.y))) visitedNeighbors++;
+            if (visitCount.ContainsKey((agent.x - 1, agent.y))) visitedNeighbors++;
+            if (visitCount.ContainsKey((agent.x, agent.y + 1))) visitedNeighbors++;
+            if (visitCount.ContainsKey((agent.x, agent.y - 1))) visitedNeighbors++;
+
+            reward -= visitedNeighbors * 2f;
+
+            // Incentivo exploración global
+            reward += distFromCenter * 0.3f;
 
 
             return reward;
@@ -327,6 +366,10 @@ namespace GrupoL
 
             return opponent;
         }
+
+
+
+
         #endregion
     }
 }
